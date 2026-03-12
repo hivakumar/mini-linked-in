@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini AI LinkedIn</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        linkedin: '#0a66c2',
+                        linkedinHover: '#004182',
+                        background: '#f3f2ef',
+                        surface: '#ffffff',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert for Notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-background text-gray-800 font-sans antialiased hidden" id="appBody">
+
+    <!-- Navbar -->
+    <nav class="bg-surface shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+            <!-- Brand -->
+            <a href="/" class="flex items-center gap-2 text-linkedin font-bold text-2xl tracking-tighter">
+                <i class="fab fa-linkedin overflow-hidden rounded bg-white"></i>
+                <span class="hidden sm:inline text-xl text-gray-900">Mini AI LinkedIn</span>
+            </a>
+
+            <!-- Nav Links (Auth Dependent) -->
+            <div id="navLinks" class="flex items-center gap-6">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Layout -->
+    <main class="max-w-5xl mx-auto mt-6 px-4 flex flex-col md:flex-row gap-6 pb-20">
+        
+        <!-- Left Sidebar (Profile Snippet - Auth Only) -->
+        <aside class="hidden md:block w-full md:w-64 flex-shrink-0" id="leftSidebar">
+            <!-- Injected via JS -->
+        </aside>
+
+        <!-- Center Feed -->
+        <div class="flex-1 max-w-2xl mx-auto w-full">
+            
+            <!-- Auth Container (Shows if not logged in) -->
+            <div id="authContainer" class="bg-surface rounded-lg shadow p-6 mb-6 text-center shadow-lg border-t-4 border-linkedin transform transition hover:-translate-y-1">
+                <h2 class="text-2xl font-bold mb-2">Welcome to your professional community</h2>
+                <p class="text-gray-500 mb-6 font-medium">Connect, share, and find skill matches.</p>
+                <div class="flex flex-col gap-3 max-w-sm mx-auto">
+                    <button id="btnGoogleSignIn" class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-full py-2.5 px-4 font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                        Sign in with Google
+                    </button>
+                    <!-- Expandable Email Auth toggle -->
+                    <button id="btnToggleEmail" class="w-full text-linkedin font-semibold hover:underline mt-2">
+                        Or sign in with email
+                    </button>
+                    
+                    <div id="emailAuthSection" class="hidden flex-col gap-3 mt-4 text-left border-t pt-4">
+                        <input type="email" id="authEmail" placeholder="Email" class="w-full border rounded-md p-2 focus:ring-1 focus:ring-linkedin focus:outline-none">
+                        <input type="password" id="authPassword" placeholder="Password" class="w-full border rounded-md p-2 focus:ring-1 focus:ring-linkedin focus:outline-none">
+                        <div class="flex gap-2">
+                            <button id="btnLogin" class="flex-1 bg-linkedin hover:bg-linkedinHover text-white font-bold py-2 px-4 rounded-full transition">Sign In</button>
+                            <button id="btnSignup" class="flex-1 bg-white border-2 border-linkedin text-linkedin hover:bg-blue-50 font-bold py-2 px-4 rounded-full transition">Sign Up</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Post Box (Auth Only) -->
+            <div id="createPostBox" class="bg-surface rounded-lg shadow p-4 mb-4 hidden">
+                <div class="flex gap-3">
+                    <img id="postBoxAvatar" src="https://via.placeholder.com/48" class="w-12 h-12 rounded-full object-cover shadow-sm bg-gray-100" alt="Avatar">
+                    <button id="btnTriggerPostModal" class="flex-1 text-left bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full px-4 py-3 text-gray-500 font-semibold transition">
+                        Start a post
+                    </button>
+                </div>
+                <!-- Mini actions -->
+                <div class="flex justify-between mt-3 px-2">
+                    <button class="flex items-center gap-2 text-gray-600 hover:bg-gray-100 p-2 rounded-md font-medium text-sm transition">
+                        <i class="fas fa-image text-blue-500 text-lg"></i> Media
+                    </button>
+                    <button class="flex items-center gap-2 text-gray-600 hover:bg-gray-100 p-2 rounded-md font-medium text-sm transition">
+                        <i class="fas fa-calendar-alt text-orange-700 text-lg"></i> Event
+                    </button>
+                    <button class="flex items-center gap-2 text-gray-600 hover:bg-gray-100 p-2 rounded-md font-medium text-sm transition hidden sm:flex">
+                        <i class="fas fa-newspaper text-red-400 text-lg"></i> Write article
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feed Divider -->
+            <div class="flex items-center my-4">
+                <hr class="flex-grow border-gray-300">
+                <span class="px-2 text-xs text-gray-400 font-semibold">Feed updates</span>
+                <hr class="flex-grow border-gray-300">
+            </div>
+
+            <!-- Posts Feed Container -->
+            <div id="feedContainer" class="flex flex-col gap-4">
+                <!-- Loading Skeleton -->
+                <div class="bg-surface rounded-lg shadow p-4 animate-pulse pt-6">
+                    <div class="flex gap-3 items-center mb-4">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/6"></div>
+                        </div>
+                    </div>
+                    <div class="h-3 bg-gray-300 rounded w-full mb-2"></div>
+                    <div class="h-3 bg-gray-300 rounded w-5/6 mb-4"></div>
+                    <div class="h-48 bg-gray-200 rounded w-full mb-4"></div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Right Sidebar (News/Widgets) -->
+        <aside class="hidden lg:block w-72 flex-shrink-0" id="rightSidebar">
+            <!-- News Widget -->
+            <div class="bg-surface rounded-lg shadow p-4 mb-4">
+                <h3 class="font-bold text-gray-900 mb-3 text-sm">Mini LinkedIn News</h3>
+                <ul class="text-sm flex flex-col gap-3">
+                    <li>
+                        <a href="#" class="font-semibold text-gray-800 hover:text-linkedin hover:underline">AI is taking over networking</a>
+                        <p class="text-xs text-gray-500 mt-1">Top news • 10,492 readers</p>
+                    </li>
+                    <li>
+                        <a href="#" class="font-semibold text-gray-800 hover:text-linkedin hover:underline">Skills matching engine live</a>
+                        <p class="text-xs text-gray-500 mt-1">Tech updates • 4,200 readers</p>
+                    </li>
+                    <li>
+                        <a href="#" class="font-semibold text-gray-800 hover:text-linkedin hover:underline">How to optimize your bio</a>
+                        <p class="text-xs text-gray-500 mt-1">Career • 8,913 readers</p>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Network Suggestions Widget -->
+            <div id="networkWidgetContainer" class="bg-surface rounded-lg shadow p-4 sticky top-20">
+                <h3 class="font-bold text-gray-900 mb-3 text-sm">Companies & Recruiters</h3>
+                <div id="networkSuggestionsList" class="flex flex-col gap-4">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Post Creation Modal -->
+    <div id="createPostModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-lg w-full max-w-lg shadow-2xl overflow-hidden flex flex-col transform transition-all scale-95 opacity-0" id="createPostModalInner">
+            
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-xl font-semibold text-gray-800">Create a post</h3>
+                <button id="btnClosePostModal" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full w-9 h-9 flex items-center justify-center transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 flex-1 overflow-y-auto">
+                 <div class="flex items-center gap-3 mb-4">
+                    <img id="modalAvatar" src="https://via.placeholder.com/48" class="w-12 h-12 rounded-full object-cover">
+                    <div>
+                        <p id="modalUserName" class="font-semibold text-gray-900 leading-tight">User</p>
+                        <span class="text-xs text-gray-500 border border-gray-400 rounded-full px-2 py-0.5 inline-flex items-center gap-1 mt-1">
+                            <i class="fas fa-globe-americas w-3"></i> Post to Anyone
+                        </span>
+                    </div>
+                </div>
+
+                <textarea id="postContent" placeholder="What do you want to talk about?" class="w-full h-32 focus:outline-none resize-none text-lg text-gray-800 bg-transparent"></textarea>
+                
+                <div id="imagePreviewContainer" class="hidden mb-3 relative rounded-lg overflow-hidden border">
+                    <img id="imagePreview" src="" class="w-full max-h-64 object-cover">
+                    <button id="btnRemoveImage" class="absolute top-2 right-2 bg-gray-800 bg-opacity-70 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-90">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- AI Enhancer Button -->
+                <button id="btnEnhanceCaption" class="mb-4 text-sm font-semibold text-purple-600 border border-purple-200 bg-purple-50 hover:bg-purple-100 rounded-full px-4 py-1.5 transition flex items-center gap-2 shadow-sm relative overflow-hidden group">
+                    <span class="absolute block w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-50 -translate-x-full group-hover:animate-shimmer top-0 left-0"></span>
+                    <i class="fas fa-magic text-purple-500"></i> Enhance with AI
+                </button>
+            </div>
+
+            <div class="p-4 flex justify-between items-center border-t bg-gray-50">
+                <div class="flex gap-2">
+                    <label for="postImageUpload" class="cursor-pointer text-gray-600 hover:bg-gray-200 p-2.5 rounded-full flex items-center justify-center w-10 h-10 transition">
+                        <i class="fas fa-image text-xl"></i>
+                    </label>
+                    <input type="file" id="postImageUpload" accept="image/*" class="hidden">
+                </div>
+                <button id="btnSubmitPost" class="bg-linkedin hover:bg-linkedinHover text-white font-semibold py-1.5 px-5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm">
+                    Post
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compat layout for simplicity in Vanilla JS) -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/firebase-init.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

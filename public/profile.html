@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Mini AI LinkedIn</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        linkedin: '#0a66c2',
+                        linkedinHover: '#004182',
+                        background: '#f3f2ef',
+                        surface: '#ffffff',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-background text-gray-800 font-sans antialiased hidden" id="appBody">
+
+    <!-- Navbar -->
+    <nav class="bg-surface shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 text-linkedin font-bold text-2xl tracking-tighter">
+                <i class="fab fa-linkedin overflow-hidden rounded bg-white"></i>
+            </a>
+            <div id="navLinks" class="flex items-center gap-6">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Layout -->
+    <main class="max-w-4xl mx-auto mt-6 px-4 flex flex-col gap-4 pb-20">
+        
+        <!-- Profile Header Card -->
+        <div class="bg-surface rounded-lg shadow overflow-hidden relative border border-gray-200">
+            <!-- Cover Banner -->
+            <div class="h-32 md:h-48 bg-gray-300 relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-300 to-linkedin opacity-80"></div>
+                <!-- Edit Cover Photo Btn (Mock) -->
+                <button class="absolute top-4 right-4 bg-white text-gray-700 w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition hidden sm:flex">
+                    <i class="fas fa-camera text-sm"></i>
+                </button>
+            </div>
+            
+            <div class="px-6 pb-6 relative">
+                <div class="flex justify-between items-start">
+                    <!-- Avatar -->
+                    <div class="-mt-16 sm:-mt-24 rounded-full p-1 bg-white relative inline-block z-10 shadow-md">
+                        <img id="profileAvatar" src="https://via.placeholder.com/150" class="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-white bg-gray-100" alt="Profile Picture">
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h1 id="profileName" class="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Loading...</h1>
+                    <p id="profileHeadline" class="text-gray-600 mt-1 text-base sm:text-lg">Loading...</p>
+                    
+                    <!-- Resume Badge (Visible if user has a resume) -->
+                    <div id="resumeBadgeContainer" class="mt-3 hidden">
+                        <a id="btnViewResume" href="#" target="_blank" class="inline-flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-semibold py-1.5 px-3 rounded-md transition text-sm shadow-sm">
+                            <i class="fas fa-file-pdf"></i> View Resume
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-3 text-sm text-gray-500 font-medium">
+                        <span>Miniville, Tech</span>
+                        <span class="text-linkedin font-bold hover:underline cursor-pointer">500+ connections</span>
+                    </div>
+
+                    <div class="mt-4 flex gap-2">
+                        <button class="bg-linkedin hover:bg-linkedinHover text-white font-bold py-1.5 px-4 rounded-full transition shadow-sm">
+                            Open to
+                        </button>
+                        <button class="bg-white hover:bg-gray-100 border-2 border-linkedin text-linkedin font-bold py-1.5 px-4 rounded-full transition shadow-sm">
+                            Add profile section
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="bg-surface rounded-lg shadow p-6 border border-gray-200">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-xl font-bold text-gray-900">About & Links</h2>
+                <button id="btnEditBioMode" class="text-gray-500 hover:bg-gray-100 w-9 h-9 rounded-full flex items-center justify-center transition">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+            </div>
+
+            <!-- View Mode -->
+            <div id="bioViewMode">
+                <p id="profileBio" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">Loading...</p>
+            </div>
+
+            <!-- Edit Mode -->
+            <div id="bioEditMode" class="hidden">
+                 <textarea id="editBioText" class="w-full h-32 border border-gray-300 rounded-md p-3 focus:border-linkedin focus:ring-1 focus:ring-linkedin focus:outline-none resize-y text-sm mb-3" placeholder="Tell us about yourself..."></textarea>
+                 
+                 <div class="mb-4">
+                     <label class="block text-sm font-medium text-gray-700 mb-1">Resume Link (PDF URL)</label>
+                     <input type="url" id="editResumeUrl" class="w-full border border-gray-300 rounded-md p-2 focus:border-linkedin focus:ring-1 focus:ring-linkedin focus:outline-none text-sm" placeholder="https://example.com/resume.pdf">
+                 </div>
+
+                 <div class="flex flex-col sm:flex-row justify-between gap-3 mb-2">
+                     <button id="btnEnhanceBio" class="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-semibold py-2 px-4 rounded-full transition text-sm flex items-center justify-center gap-2 shadow-sm relative overflow-hidden group">
+                        <span class="absolute block w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-50 -translate-x-full group-hover:animate-shimmer top-0 left-0"></span> 
+                        <i class="fas fa-magic text-purple-500"></i> AI Enhance Bio
+                     </button>
+                     <div class="flex gap-2">
+                         <button id="btnCancelBio" class="text-gray-600 hover:bg-gray-100 font-semibold py-2 px-4 rounded-full transition text-sm shadow-sm ring-1 ring-inset ring-gray-300">Cancel</button>
+                         <button id="btnSaveBio" class="bg-linkedin hover:bg-linkedinHover text-white font-semibold py-2 px-4 rounded-full transition text-sm shadow-sm">Save</button>
+                     </div>
+                 </div>
+            </div>
+        </div>
+        
+        <!-- Skills Section -->
+        <div class="bg-surface rounded-lg shadow p-6 border border-gray-200">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Skills</h2>
+                <button id="btnEditSkillsMode" class="text-gray-500 hover:bg-gray-100 w-9 h-9 rounded-full flex items-center justify-center transition">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+            </div>
+
+            <div id="skillsViewMode">
+                <div id="skillsContainer" class="flex flex-wrap gap-2 text-sm text-gray-800">
+                    <!-- Loaded via JS -->
+                </div>
+                <p id="noSkillsMessage" class="text-sm text-gray-500 hidden">No skills added yet.</p>
+            </div>
+
+            <div id="skillsEditMode" class="hidden">
+                 <p class="text-xs text-gray-500 mb-2">Enter skills separated by commas (e.g. JavaScript, React, Leadership)</p>
+                 <input type="text" id="editSkillsInput" class="w-full border border-gray-300 rounded-md p-2 focus:border-linkedin focus:ring-1 focus:ring-linkedin focus:outline-none text-sm mb-3" placeholder="JavaScript, Node.js">
+                 <div class="flex justify-end gap-2">
+                     <button id="btnCancelSkills" class="text-gray-600 hover:bg-gray-100 font-semibold py-1.5 px-4 rounded-full transition text-sm shadow-sm ring-1 ring-inset ring-gray-300">Cancel</button>
+                     <button id="btnSaveSkills" class="bg-linkedin hover:bg-linkedinHover text-white font-semibold py-1.5 px-4 rounded-full transition text-sm shadow-sm">Save</button>
+                 </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Firebase SDK Setup -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    
+    <script src="js/firebase-init.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>
